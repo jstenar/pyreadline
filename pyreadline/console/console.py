@@ -202,7 +202,7 @@ class Console(object):
         self.GetConsoleMode(self.hin, byref(self.inmode))
         self.SetConsoleMode(self.hin, 0xf)
         info = CONSOLE_SCREEN_BUFFER_INFO()
-        self.GetConsoleScreenBufferInfo(self.hout, byref(info))
+        GetConsoleScreenBufferInfo(self.hout, byref(info))
         self.attr = info.wAttributes
         self.saveattr = info.wAttributes # remember the initial colors
         self.defaultstate = AnsiState()
@@ -234,7 +234,7 @@ class Console(object):
 
     def _get_top_bot(self):
         info = CONSOLE_SCREEN_BUFFER_INFO()
-        self.GetConsoleScreenBufferInfo(self.hout, byref(info))
+        GetConsoleScreenBufferInfo(self.hout, byref(info))
         rect = info.srWindow
         top = rect.Top 
         bot = rect.Bottom 
@@ -245,7 +245,7 @@ class Console(object):
         also handle negative x and y.'''
         if x < 0 or y < 0:
             info = CONSOLE_SCREEN_BUFFER_INFO()
-            self.GetConsoleScreenBufferInfo(self.hout, byref(info))
+            GetConsoleScreenBufferInfo(self.hout, byref(info))
             if x < 0:
                 x = info.srWindow.Right - x
                 y = info.srWindow.Bottom + y
@@ -258,7 +258,7 @@ class Console(object):
         '''Move or query the window cursor.'''
         if x is None:
             info = CONSOLE_SCREEN_BUFFER_INFO()
-            self.GetConsoleScreenBufferInfo(self.hout, byref(info))
+            GetConsoleScreenBufferInfo(self.hout, byref(info))
             return (info.dwCursorPosition.X, info.dwCursorPosition.Y)
         else:
             return self.SetConsoleCursorPosition(self.hout, 
@@ -409,7 +409,7 @@ class Console(object):
         if len(fill) != 1:
             raise ValueError
         info = CONSOLE_SCREEN_BUFFER_INFO()
-        self.GetConsoleScreenBufferInfo(self.hout, byref(info))
+        GetConsoleScreenBufferInfo(self.hout, byref(info))
         if info.dwCursorPosition.X != 0 or info.dwCursorPosition.Y != 0:
             self.SetConsoleCursorPosition(self.hout, self.fixcoord(0, 0))
 
@@ -472,7 +472,7 @@ class Console(object):
     def scroll_window(self, lines):
         '''Scroll the window by the indicated number of lines.'''
         info = CONSOLE_SCREEN_BUFFER_INFO()
-        self.GetConsoleScreenBufferInfo(self.hout, byref(info))
+        GetConsoleScreenBufferInfo(self.hout, byref(info))
         rect = info.srWindow
         log('sw: rtop=%d rbot=%d' % (rect.Top, rect.Bottom))
         top = rect.Top + lines
@@ -567,7 +567,7 @@ class Console(object):
     def size(self, width=None, height=None):
         '''Set/get window size.'''
         info = CONSOLE_SCREEN_BUFFER_INFO()
-        status = self.GetConsoleScreenBufferInfo(self.hout, byref(info))
+        status = GetConsoleScreenBufferInfo(self.hout, byref(info))
         if not status:
             return None
         if width is not None and height is not None:
@@ -673,7 +673,14 @@ Console.WriteConsoleOutputCharacterW.argtypes = [HANDLE, c_wchar_p, DWORD, c_int
 Console.WriteFile.restype = BOOL
 Console.WriteFile.argtypes = [HANDLE, LPCVOID, DWORD, LPDWORD, c_void_p] #HANDLE, LPCVOID , DWORD, LPDWORD , LPOVERLAPPED 
 
-
+def GetConsoleScreenBufferInfo(handle, pointer):
+    restype = Console.GetConsoleScreenBufferInfo.restype
+    argtypes = Console.GetConsoleScreenBufferInfo.argtypes
+    Console.GetConsoleScreenBufferInfo.argtypes = [HANDLE, c_void_p]
+    result = Console.GetConsoleScreenBufferInfo(handle, pointer)
+    Console.GetConsoleScreenBufferInfo.restype = restype
+    Console.GetConsoleScreenBufferInfo.argtypes = argtypes
+    return result
 
 from .event import Event
 
