@@ -8,6 +8,11 @@
 #*****************************************************************************
 from __future__ import print_function, unicode_literals, absolute_import
 
-from . import unicode_helper, logger, clipboard, lineeditor, modes, console
+from . import unicode_helper
+from . import logger
+from . import clipboard
+from . import lineeditor
+from . import modes
+from . import console
 from .rlmain import *
 from . import rlmain
